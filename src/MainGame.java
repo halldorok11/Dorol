@@ -19,25 +19,24 @@ public class MainGame implements ApplicationListener {
 		private static final int WON = 3;
 	
 		//Used to see in what state the game is
-		private int state = MENU;
+		private int state;
 		
 		//This is set to true when the player is in the progress of playing a game
 		private boolean ongoinggame = false;
-	
-        // Java random util for random colors of the box.
-        private Random random = new Random();
 
-        // Class member variables for the box position.
-        private float x,y;
-
-        // Member variables for the colors of the box.
-        private float r_color, g_color, b_color;
-
-        // Member variable for the movement speed of the box.
-        private float moveSpeed = 250;
-
-        // The width/height of the box.
-        private float boxWidth = 50;
+        //Variable for the Player.
+        private Box player;
+        
+        //Variable for the Bunny.
+        private Box bunny;
+        
+        //Variables for the main window
+        private WorldWindow mainWindow;
+        private ViewPort mainPort;
+        
+        //Varables for the minimap
+        private WorldWindow miniWindow;
+        private ViewPort miniPort;
 
         private SpriteBatch spriteBatch;
         private BitmapFont font;
@@ -48,18 +47,17 @@ public class MainGame implements ApplicationListener {
         //The create function is called when the Application is first created.
         // This is a good place for application initialization.
         public void create() {
+        	this.state = MENU;
 
             this.spriteBatch = new SpriteBatch();
             this.font = new BitmapFont();
+            
+            player = new Box(0,0,12,);
 
             // Initialize the position of the box.
-            this.x = this.y = 10f;
+            player.x = player.y = 10;
 
-            // Get random colors for the RGB. value of the box.
-            this.r_color = this.random.nextFloat();
-            this.g_color    = this.random.nextFloat();
-            this.b_color = this.random.nextFloat();
-
+            
             // Enable vertex arrays.
             Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 
@@ -143,7 +141,7 @@ public class MainGame implements ApplicationListener {
         }
         
         private void initialize(){
-        	
+        	//TODO
         }
         
         private void help() {
@@ -169,27 +167,21 @@ public class MainGame implements ApplicationListener {
         }
 
         private void update(){
-            // Check if the mouse has been pressed.
-            if(Gdx.input.justTouched()) {
-                // Update x,y coordinates of the box with respect to the location of the mouse.
-                this.x = Gdx.input.getX()- (this.boxWidth/2.0f);
-                this.y = (Gdx.graphics.getHeight() - Gdx.input.getY()) - (this.boxWidth/2.0f);
-            }
             // Keyboard handling.
             if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-                this.x -=(this.moveSpeed *  Gdx.graphics.getDeltaTime());
+                player.x -=(this.moveSpeed *  Gdx.graphics.getDeltaTime());
             }
 
             if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-                this.x +=(this.moveSpeed *  Gdx.graphics.getDeltaTime());;
+                player.x +=(this.moveSpeed *  Gdx.graphics.getDeltaTime());;
             }
 
             if(Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)){
-                this.y += (this.moveSpeed *  Gdx.graphics.getDeltaTime());
+                player.y += (this.moveSpeed *  Gdx.graphics.getDeltaTime());
             }
 
             if(Gdx.input.isKeyPressed(Input.Keys.S)|| Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-                this.y -= (this.moveSpeed *  Gdx.graphics.getDeltaTime());
+                player.y -= (this.moveSpeed *  Gdx.graphics.getDeltaTime());
             }
             
             if (Gdx.input.isKeyPressed(Input.Keys.H)){
@@ -200,10 +192,6 @@ public class MainGame implements ApplicationListener {
             	this.state = MENU;
             }
 
-            // Update the color of the box.
-            this.r_color = this.r_color <= 1.0 ? this.r_color + 0.008f : 0f;
-            this.b_color = this.b_color <= 1.0 ? this.b_color + 0.008f : 0f;
-            this.g_color = this.g_color <= 1.0 ? this.g_color + 0.008f : 0f;
         }
 
         private void display(){

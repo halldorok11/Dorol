@@ -1,8 +1,20 @@
 
 public class Box {
-
-	public Box() {
-		// TODO Auto-generated constructor stub
+	public int x; //x position on screen
+	public int y; //y position on screen
+	public int width; //the width of the box
+	public int red, green, blue; //colors of the box
+	public int speed;
+	
+	public Box(int x, int y, int width, int red, int green, int blue, int speed) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.red = red;
+		this.green = green;
+		this.blue = blue;
+		this.speed = speed;
 	}
-
 }
+
+	
