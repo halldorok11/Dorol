@@ -1,6 +1,7 @@
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -21,8 +22,11 @@ public class MainGame implements ApplicationListener {
 		//Used to see in what state the game is
 		private int state;
 		
+		//minimap toggle
+		private boolean mtoggle = true; 
+		
 		//This is set to true when the player is in the progress of playing a game
-		private boolean ongoinggame = false;
+		private boolean playing = false;
 
         //Variable for the Player.
         private Box player;
@@ -53,20 +57,20 @@ public class MainGame implements ApplicationListener {
             this.font = new BitmapFont();
             
             int width = 12;
-            player = new Box(100,100,width,0,1,1,3);
-            bunny = new Box(0,0,width,1,0.6f,0.6f,2);
-
-            // Initialize the position of the box.
-            player.x = player.y = 10;
+            player = new Box(250,100,width,0,1,1,3);
+            bunny = new Box(100,100,width,1,0.6f,0.6f,2);
+            
+            mainWindow = new WorldWindow(0, 800, 0, 800);
+        	mainPort = new ViewPort(0, 0, 800, 800);
+        	
+        	miniWindow = new WorldWindow(0, 800, 0, 800); //TODO change to accomadate the maze size
+        	miniPort = new ViewPort(0, 0, 200, 200);
 
             
-            // Enable vertex arrays.
-            Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-
             //Specify the color (RGB, Alpha) when the color buffers are cleared.
             Gdx.gl11.glClearColor(0f, 0f, 0.2f, 1);
 
-            // Create vertex buffer for a box.
+            // Create vertex buffer for a Box.
             this.vertexBuffer = BufferUtils.newFloatBuffer(8);
             this.vertexBuffer.put(new float[] {0,0, 0,width, width,0, width,width});
             this.vertexBuffer.rewind();
@@ -74,8 +78,11 @@ public class MainGame implements ApplicationListener {
             // Specify the location of data in the vertex buffer that we will draw when
             // we call the glDrawArrays function.
             Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.vertexBuffer);
+            
+         // Enable vertex arrays.
+            Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
         }
-
+        
         //The dispose function is called when the Application is destroyed.
         // This is a good place for save the application state if needed or to
         // free resources.
@@ -99,8 +106,8 @@ public class MainGame implements ApplicationListener {
         	case MENU: 		this.menu();
         					break;
         	
-        	case PLAYING: 	this.update();
-        					this.display();
+        	case PLAYING: 	this.display();
+        					this.update();
         					break;
         	
         	case HELP:  	this.help();
@@ -113,7 +120,10 @@ public class MainGame implements ApplicationListener {
         
         private void menu(){
         	// Clear the screen.
+            Gdx.gl11.glClearColor(0.3f, 0f, 0f, 1);
             Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+            //Just to be sure this is the viewport we write into.
+            Gdx.gl11.glViewport(mainPort.left, mainPort.bottom, mainPort.width, mainPort.height);
 
             // Draw the Menu text on the screen
             this.spriteBatch.begin();
@@ -121,21 +131,22 @@ public class MainGame implements ApplicationListener {
             font.draw(this.spriteBatch, String.format("WELCOME TO THE MAZE !"), 240, 500);
             font.draw(this.spriteBatch, String.format("FIND THE PINK BUNNY"), 240, 450);
             font.draw(this.spriteBatch, String.format("Use the Arrow Keys to navigate the maze."), 130, 350);
-            font.draw(this.spriteBatch, String.format("Press 'S' to start a game."), 130, 300);
-            font.draw(this.spriteBatch, String.format("Press 'N' to start a new game."), 130, 250);
+            font.draw(this.spriteBatch, String.format("Press 'H' to see the help dialog in game."), 130, 300);
+            font.draw(this.spriteBatch, String.format("Press 'S' to start a game."), 130, 250);
+            font.draw(this.spriteBatch, String.format("Press 'N' to start a new game."), 130, 200);
             this.spriteBatch.end();
 
             if(Gdx.input.isKeyPressed(Input.Keys.S)){
             	this.state = PLAYING;
-            	if (this.ongoinggame == false){
-            		this.ongoinggame = true;
+            	if (this.playing == false){
+            		this.playing = true;
             		this.initialize();
             	}
             }
             
             if(Gdx.input.isKeyPressed(Input.Keys.N)){
             	this.state = PLAYING;
-            	this.ongoinggame = true;
+            	this.playing = true;
             	this.initialize();
             }
             
@@ -148,7 +159,10 @@ public class MainGame implements ApplicationListener {
         
         private void help() {
         	// Clear the screen.
+        	Gdx.gl11.glClearColor(0f, 0.3f, 0f, 1);
             Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+            //Just to be sure this is the viewport we write into.
+            Gdx.gl11.glViewport(mainPort.left, mainPort.bottom, mainPort.width, mainPort.height);
 
             // Draw the help text on the screen
             this.spriteBatch.begin();
@@ -168,64 +182,83 @@ public class MainGame implements ApplicationListener {
             }
         }
 
+        
+        private void updatebunny(){
+            bunny.x += bunny.speed*bunny.heading_x; // move on the x axis
+            bunny.y += bunny.speed*bunny.heading_y; // move on the y axis
+        }
+        
+        private void updateplayer(){
+        	if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+            	player.x += player.speed; //move it on the x axis
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)){ //same as above
+            	player.x -= player.speed;
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)){ //same as above
+            	player.y += player.speed;
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.S)|| Gdx.input.isKeyPressed(Input.Keys.DOWN)){ //same as above
+            	player.y -= player.speed;
+            }
+        }
+        
         private void update(){
-            // Keyboard handling.
-            if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-                player.x -=player.speed;
-            }
-
-            if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-                player.x +=player.speed;
-            }
-
-            if(Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)){
-                player.y += player.speed;
-            }
-
-            if(Gdx.input.isKeyPressed(Input.Keys.S)|| Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-                player.y -= player.speed;
-            }
-            
-            if (Gdx.input.isKeyPressed(Input.Keys.H)){
+        	updateplayer();
+        	updatebunny();
+        	
+        	if (Gdx.input.isKeyPressed(Input.Keys.H)){
             	this.state = HELP;
             }
             
             if (Gdx.input.isKeyPressed(Input.Keys.Q)){
             	this.state = MENU;
             }
-
+            if (Gdx.input.isKeyPressed(Input.Keys.M)){
+            	if (this.mtoggle) this.mtoggle = false;
+            	else this.mtoggle = true;
+            }
         }
+       
 
         private void display(){
-            // Clear the screen.
-            Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-            // Change into ModelView matrix mode. All commands hereafter will operate on
-            // the ModelView matrix.
+    		Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.vertexBuffer);
+        	Gdx.gl11.glClearColor(0f, 0f, 0.5f, 1.0f); //background color
+            Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT); //clear background
+            Gdx.gl11.glColor4f(1, 1, 0, 1.0f);
+            Gdx.gl11.glViewport(mainPort.left, mainPort.bottom, mainPort.width, mainPort.height);
             Gdx.gl11.glMatrixMode(GL11.GL_MODELVIEW);
-
-            // Replace the ModelView matrix with the identity matrix
             Gdx.gl11.glLoadIdentity();
-
-            // Draw some text on the screen
-            this.spriteBatch.begin();
-            font.setColor(1,1,1,1f);
-            font.draw(this.spriteBatch, String.format("H: Help"),10,60);
-            font.draw(this.spriteBatch, String.format("M: Minimap"),10,40);
-            font.draw(this.spriteBatch, String.format("Q: Quit"),10,20);
-            this.spriteBatch.end();
-
-            Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.vertexBuffer);
-
-            // The color that we want to draw with (changed in update.)
-            Gdx.gl11.glColor4f(player.red, player.green, player.blue, 1f);
-
-            // Apply translation to the modelview matrix with respect to the
-            // values in x and y.
-            Gdx.gl11.glTranslatef(player.x, player.y, 0);
-
-            // Draw the box (that was defines in our vertex array in create)
-            Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+            Gdx.glu.gluOrtho2D(Gdx.gl10, player.x-75, player.x+75, player.y-75, player.y+75);
+            drawScene();
+            
+            //show the minimap if that is requested.
+            if (this.mtoggle){
+            	Gdx.gl11.glColor4f(0, 1, 0, 1.0f);
+            	Gdx.gl11.glViewport(miniPort.left, miniPort.bottom, miniPort.width, miniPort.height);
+                Gdx.gl11.glMatrixMode(GL11.GL_MODELVIEW);
+                Gdx.gl11.glLoadIdentity();
+                Gdx.glu.gluOrtho2D(Gdx.gl10, miniWindow.left, miniWindow.right, miniWindow.bottom, miniWindow.top);
+                drawScene();     
+            }
         }
+        
+        private void drawScene(){
+        	displaybox(player);
+        	displaybox(bunny);
+        }
+        
+        private void displaybox(Box b){
+        	Gdx.gl11.glMatrixMode(GL11.GL_MODELVIEW);
+            Gdx.gl11.glLoadIdentity();
+            Gdx.gl11.glColor4f(b.red, b.green, b.blue, 1f);
+            
+            Gdx.gl11.glPushMatrix();
+            Gdx.gl11.glTranslatef(b.x, b.y, 0);
+            Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+            Gdx.gl11.glPopMatrix(); 
+        }
+        
 
         // Called when the Application is resized. This can happen at any point
         //during a non-paused state but will never happen before a call to create().
@@ -238,6 +271,7 @@ public class MainGame implements ApplicationListener {
             Gdx.glu.gluOrtho2D(Gdx.gl10, 0, width, 0, height);
             // Set up affine transformation of x and y from world coordinates to window coordinates
             Gdx.gl11.glViewport(0, 0, width, height);
+            
         }
 
         @Override

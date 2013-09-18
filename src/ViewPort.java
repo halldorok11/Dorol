@@ -1,14 +1,13 @@
-public class ViewPort {
-	public int x; //bottom left x position
-	public int width; //width of the viewport
-	public int y; //bottom left y position
-	public int height; //height of the viewport
+class ViewPort{
+	int left;
+	int bottom;
+	int width;
+	int height;
 	
-	public ViewPort(int x, int width, int y, int height) {
-		this.x = x;
+	public ViewPort(int left, int bottom, int width, int height){
+		this.left = left;
+		this.bottom = bottom;
 		this.width = width;
-		this.y = y;
 		this.height = height;
 	}
-
 }
