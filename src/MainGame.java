@@ -12,7 +12,18 @@ import java.util.List;
 import java.util.Random;
 
 
-public class maingame implements ApplicationListener {
+public class MainGame implements ApplicationListener {
+		private static final int MENU = 0;
+		private static final int PLAYING = 1;
+		private static final int HELP = 2;
+		private static final int WON = 3;
+	
+		//Used to see in what state the game is
+		private int state = MENU;
+		
+		//This is set to true when the player is in the progress of playing a game
+		private boolean ongoinggame = false;
+	
         // Java random util for random colors of the box.
         private Random random = new Random();
 
@@ -84,8 +95,77 @@ public class maingame implements ApplicationListener {
         // this function.
         @Override
         public void render() {
-            this.display();
-            this.update();
+        	switch (this.state) {
+        	case MENU: 		this.menu();
+        					break;
+        	
+        	case PLAYING: 	this.update();
+        					this.display();
+        					break;
+        	
+        	case HELP:  	this.help();
+        					break;
+        	
+        	case WON:		break;
+        	
+        	}
+        }
+        
+        private void menu(){
+        	// Clear the screen.
+            Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+
+            // Draw the Menu text on the screen
+            this.spriteBatch.begin();
+            font.setColor(1, 1, 1, 1f);
+            font.draw(this.spriteBatch, String.format("WELCOME TO THE MAZE !"), 240, 500);
+            font.draw(this.spriteBatch, String.format("FIND THE PINK BUNNY"), 240, 450);
+            font.draw(this.spriteBatch, String.format("Use the Arrow Keys to navigate the maze."), 130, 350);
+            font.draw(this.spriteBatch, String.format("Press 'S' to start a game."), 130, 300);
+            font.draw(this.spriteBatch, String.format("Press 'N' to start a new game."), 130, 250);
+            this.spriteBatch.end();
+
+            if(Gdx.input.isKeyPressed(Input.Keys.S)){
+            	this.state = PLAYING;
+            	if (this.ongoinggame == false){
+            		this.ongoinggame = true;
+            		this.initialize();
+            	}
+            }
+            
+            if(Gdx.input.isKeyPressed(Input.Keys.N)){
+            	this.state = PLAYING;
+            	this.ongoinggame = true;
+            	this.initialize();
+            }
+            
+            
+        }
+        
+        private void initialize(){
+        	
+        }
+        
+        private void help() {
+        	// Clear the screen.
+            Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+
+            // Draw the help text on the screen
+            this.spriteBatch.begin();
+            font.setColor(1, 1, 1, 1f);
+            font.draw(this.spriteBatch, String.format("Use the Arrow Keys to navigate the maze."), 100, 550);
+            font.draw(this.spriteBatch, String.format("Press 'esc' or 'S' to continue game."), 100, 500);
+            font.draw(this.spriteBatch, String.format("Press 'M' to toggle the minimap."), 100, 450);
+            font.draw(this.spriteBatch, String.format("Press 'Q' to quit to menu."), 100, 400);
+            this.spriteBatch.end();
+
+            if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE) || Gdx.input.isKeyPressed(Input.Keys.S)){
+            	this.state = PLAYING;
+            }
+            
+            if(Gdx.input.isKeyPressed(Input.Keys.Q)){
+            	this.state = MENU;
+            }
         }
 
         private void update(){
@@ -111,6 +191,14 @@ public class maingame implements ApplicationListener {
             if(Gdx.input.isKeyPressed(Input.Keys.S)|| Gdx.input.isKeyPressed(Input.Keys.DOWN)){
                 this.y -= (this.moveSpeed *  Gdx.graphics.getDeltaTime());
             }
+            
+            if (Gdx.input.isKeyPressed(Input.Keys.H)){
+            	this.state = HELP;
+            }
+            
+            if (Gdx.input.isKeyPressed(Input.Keys.Q)){
+            	this.state = MENU;
+            }
 
             // Update the color of the box.
             this.r_color = this.r_color <= 1.0 ? this.r_color + 0.008f : 0f;
@@ -130,8 +218,10 @@ public class maingame implements ApplicationListener {
 
             // Draw some text on the screen
             this.spriteBatch.begin();
-            font.setColor(this.r_color, this.b_color, this.b_color, 1f);
-            font.draw(this.spriteBatch, String.format("Box position %.2f %.2f",this.x, this.y), 10, 20);
+            font.setColor(1,1,1,1f);
+            font.draw(this.spriteBatch, String.format("H: Help"),10,60);
+            font.draw(this.spriteBatch, String.format("M: Minimap"),10,40);
+            font.draw(this.spriteBatch, String.format("Q: Quit"),10,20);
             this.spriteBatch.end();
 
             Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.vertexBuffer);
