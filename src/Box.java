@@ -3,10 +3,10 @@ public class Box {
 	public int x; //x position on screen
 	public int y; //y position on screen
 	public int width; //the width of the box
-	public int red, green, blue; //colors of the box
+	public float red, green, blue; //colors of the box
 	public int speed;
 	
-	public Box(int x, int y, int width, int red, int green, int blue, int speed) {
+	public Box(int x, int y, int width, float red, float green, float blue, int speed) {
 		this.x = x;
 		this.y = y;
 		this.width = width;

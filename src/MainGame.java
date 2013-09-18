@@ -52,7 +52,9 @@ public class MainGame implements ApplicationListener {
             this.spriteBatch = new SpriteBatch();
             this.font = new BitmapFont();
             
-            player = new Box(0,0,12,);
+            int width = 12;
+            player = new Box(100,100,width,0,1,1,3);
+            bunny = new Box(0,0,width,1,0.6f,0.6f,2);
 
             // Initialize the position of the box.
             player.x = player.y = 10;
@@ -62,11 +64,11 @@ public class MainGame implements ApplicationListener {
             Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
 
             //Specify the color (RGB, Alpha) when the color buffers are cleared.
-            Gdx.gl11.glClearColor(0.2f, 0.2f, 0.2f, 1);
+            Gdx.gl11.glClearColor(0f, 0f, 0.2f, 1);
 
             // Create vertex buffer for a box.
             this.vertexBuffer = BufferUtils.newFloatBuffer(8);
-            this.vertexBuffer.put(new float[] {0,0, 0,boxWidth, boxWidth,0, boxWidth,boxWidth});
+            this.vertexBuffer.put(new float[] {0,0, 0,width, width,0, width,width});
             this.vertexBuffer.rewind();
 
             // Specify the location of data in the vertex buffer that we will draw when
@@ -169,19 +171,19 @@ public class MainGame implements ApplicationListener {
         private void update(){
             // Keyboard handling.
             if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-                player.x -=(this.moveSpeed *  Gdx.graphics.getDeltaTime());
+                player.x -=player.speed;
             }
 
             if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-                player.x +=(this.moveSpeed *  Gdx.graphics.getDeltaTime());;
+                player.x +=player.speed;
             }
 
             if(Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)){
-                player.y += (this.moveSpeed *  Gdx.graphics.getDeltaTime());
+                player.y += player.speed;
             }
 
             if(Gdx.input.isKeyPressed(Input.Keys.S)|| Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-                player.y -= (this.moveSpeed *  Gdx.graphics.getDeltaTime());
+                player.y -= player.speed;
             }
             
             if (Gdx.input.isKeyPressed(Input.Keys.H)){
@@ -215,11 +217,11 @@ public class MainGame implements ApplicationListener {
             Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.vertexBuffer);
 
             // The color that we want to draw with (changed in update.)
-            Gdx.gl11.glColor4f(this.r_color, this.b_color, this.b_color, 1f);
+            Gdx.gl11.glColor4f(player.red, player.green, player.blue, 1f);
 
             // Apply translation to the modelview matrix with respect to the
             // values in x and y.
-            Gdx.gl11.glTranslatef(this.x, this.y, 0);
+            Gdx.gl11.glTranslatef(player.x, player.y, 0);
 
             // Draw the box (that was defines in our vertex array in create)
             Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
