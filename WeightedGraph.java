@@ -21,6 +21,7 @@ public class WeightedGraph {
 
 	}
 
+	public int V() {return V;}
 
 	public void addEdge(Edge e)
 	{
