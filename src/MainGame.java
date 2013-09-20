@@ -53,7 +53,27 @@ public class MainGame implements ApplicationListener {
         public void create() {
         	this.state = MENU;
 
-            this.spriteBatch = new SpriteBatch();
+            this.initialize();
+
+            
+            //Specify the color (RGB, Alpha) when the color buffers are cleared.
+            Gdx.gl11.glClearColor(0f, 0f, 0.2f, 1);
+
+            // Create vertex buffer for a Box.
+            this.vertexBuffer = BufferUtils.newFloatBuffer(8);
+            this.vertexBuffer.put(new float[] {0,0, 0,player.width, player.width,0, player.width,player.width});
+            this.vertexBuffer.rewind();
+
+            // Specify the location of data in the vertex buffer that we will draw when
+            // we call the glDrawArrays function.
+            Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.vertexBuffer);
+            
+         // Enable vertex arrays.
+            Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+        }
+        
+        private void initialize(){
+        	this.spriteBatch = new SpriteBatch();
             this.font = new BitmapFont();
             
             int width = 12;
@@ -65,22 +85,6 @@ public class MainGame implements ApplicationListener {
         	
         	miniWindow = new WorldWindow(0, 800, 0, 800); //TODO change to accomadate the maze size
         	miniPort = new ViewPort(0, 0, 200, 200);
-
-            
-            //Specify the color (RGB, Alpha) when the color buffers are cleared.
-            Gdx.gl11.glClearColor(0f, 0f, 0.2f, 1);
-
-            // Create vertex buffer for a Box.
-            this.vertexBuffer = BufferUtils.newFloatBuffer(8);
-            this.vertexBuffer.put(new float[] {0,0, 0,width, width,0, width,width});
-            this.vertexBuffer.rewind();
-
-            // Specify the location of data in the vertex buffer that we will draw when
-            // we call the glDrawArrays function.
-            Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.vertexBuffer);
-            
-         // Enable vertex arrays.
-            Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
         }
         
         //The dispose function is called when the Application is destroyed.
@@ -113,7 +117,8 @@ public class MainGame implements ApplicationListener {
         	case HELP:  	this.help();
         					break;
         	
-        	case WON:		break;
+        	case WON:		this.congratulations();
+        					break;
         	
         	}
         }
@@ -132,7 +137,7 @@ public class MainGame implements ApplicationListener {
             font.draw(this.spriteBatch, String.format("FIND THE PINK BUNNY"), 240, 450);
             font.draw(this.spriteBatch, String.format("Use the Arrow Keys to navigate the maze."), 130, 350);
             font.draw(this.spriteBatch, String.format("Press 'H' to see the help dialog in game."), 130, 300);
-            font.draw(this.spriteBatch, String.format("Press 'S' to start a game."), 130, 250);
+            font.draw(this.spriteBatch, String.format("Press 'S' to start an ongoing game."), 130, 250);
             font.draw(this.spriteBatch, String.format("Press 'N' to start a new game."), 130, 200);
             this.spriteBatch.end();
 
@@ -151,10 +156,6 @@ public class MainGame implements ApplicationListener {
             }
             
             
-        }
-        
-        private void initialize(){
-        	//TODO
         }
         
         private void help() {
@@ -181,6 +182,27 @@ public class MainGame implements ApplicationListener {
             	this.state = MENU;
             }
         }
+        
+        private void congratulations(){
+        	// Clear the screen.
+        	Gdx.gl11.glClearColor(0f, 0.3f, 0f, 1);
+            Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+            //Just to be sure this is the viewport we write into.
+            Gdx.gl11.glViewport(mainPort.left, mainPort.bottom, mainPort.width, mainPort.height);
+
+            // Draw the congratulations text on the screen
+            this.spriteBatch.begin();
+            font.setColor(1, 1, 1, 1f);
+            font.draw(this.spriteBatch, String.format("CONGRATULATIONS!"), 250, 550);
+            font.draw(this.spriteBatch, String.format("You cought the pink bunny :D"), 250, 500);
+            font.draw(this.spriteBatch, String.format("Press Q to go to the menu and start a new game."), 250, 450);
+            this.spriteBatch.end();
+            
+            if(Gdx.input.isKeyPressed(Input.Keys.Q)){
+            	this.state = MENU;
+            	this.initialize();
+            }
+        }
 
         
         private void updatebunny(){
@@ -203,9 +225,22 @@ public class MainGame implements ApplicationListener {
             }
         }
         
+        private boolean victory(){
+            if (player.x + player.width > bunny.x &&  player.x < bunny.x + bunny.width){ //if on the x axis, player is inside bunny, this is true
+           		if (player.y + player.width > bunny.y &&  player.y < bunny.y + bunny.width){ // if on the y axis, player is inside bunny, this is true
+           			return true; //some point of player is inside bunny and therefore we have a collision between them.
+           		}
+           	}
+           	return false; //no collision      
+        }
+        
         private void update(){
         	updateplayer();
         	updatebunny();
+        	
+        	if (victory()){
+        		this.state = WON;
+        	}
         	
         	if (Gdx.input.isKeyPressed(Input.Keys.H)){
             	this.state = HELP;
@@ -231,6 +266,7 @@ public class MainGame implements ApplicationListener {
             Gdx.gl11.glLoadIdentity();
             Gdx.glu.gluOrtho2D(Gdx.gl10, player.x-75, player.x+75, player.y-75, player.y+75);
             drawScene();
+
             
             //show the minimap if that is requested.
             if (this.mtoggle){
