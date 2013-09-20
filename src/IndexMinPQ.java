@@ -1,8 +1,4 @@
-package graph.test;/*
- * User: Ólafur Daði Jónsson
- * Date: 18.9.2013
- * Time: 12:05
- */
+
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

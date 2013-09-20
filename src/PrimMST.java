@@ -1,4 +1,4 @@
-package graph.test;
+
 
 public class PrimMST {
 	private Edge[] edgeTo;        // edgeTo[v] = shortest edge from tree vertex to non-tree vertex

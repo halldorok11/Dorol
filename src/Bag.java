@@ -1,8 +1,4 @@
-ackage graph.test;/*
- * User: Ólafur Daði Jónsson
- * Date: 18.9.2013
- * Time: 10:29
- */
+
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
