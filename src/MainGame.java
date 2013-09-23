@@ -53,6 +53,8 @@ public class MainGame implements ApplicationListener {
 
         private int env_height;
         private int env_width;
+        private int map_height;
+        private int map_width;
 
         private Maze maze;
         private Queue<Edge> edgelist;
@@ -66,6 +68,8 @@ public class MainGame implements ApplicationListener {
 
             env_height = Gdx.graphics.getHeight();
             env_width = Gdx.graphics.getWidth();
+            map_height = map_width = 1000;
+
             this.state = MENU;
 
             this.initialize();
@@ -92,7 +96,7 @@ public class MainGame implements ApplicationListener {
             this.hBuffer.rewind();
 
             this.mapBuffer = BufferUtils.newFloatBuffer(8);
-            this.mapBuffer.put(new float[] {0,0, env_width,0, 0,env_height, env_width,env_height});
+            this.mapBuffer.put(new float[] {0,0, map_width,0, 0,map_height, map_width,map_height});
             this.mapBuffer.rewind();
 
             // Specify the location of data in the vertex buffer that we will draw when
@@ -115,7 +119,7 @@ public class MainGame implements ApplicationListener {
             mainWindow = new WorldWindow(0, env_width, 0, env_height);
         	mainPort = new ViewPort(0, 0, env_width, env_height);
         	
-        	miniWindow = new WorldWindow(0, env_width, 0, env_height); //TODO change to accommodate the maze size
+        	miniWindow = new WorldWindow(0, map_width, 0, map_height); //TODO change to accommodate the maze size
 
         	miniPort = new ViewPort(0, 0, env_width/4, env_height/4);
 
@@ -275,19 +279,28 @@ public class MainGame implements ApplicationListener {
         }
 
         private boolean outside(Box a){
+            int set = 0;
             for (Box b : collisionboxes){
-                if (inside(a,b)){
-                    return false;
+                if (inside(a.x, a.y, b)){
+                    set++;
+                    if (set >= 2){
+                        return false;
+                    }
+                }
+                if (inside(a.x+a.width, a.y+a.width, b)){
+                    set++;
+                    if (set >= 2){
+                        return false;
+                    }
                 }
             }
 
-	        System.out.println("Outside?");
             return true;
         }
 
-        private boolean inside(Box a, Box b){ //if a is inside b
-            if (a.x > b.x && a.x+a.width < b.x+b.width){
-                if (a.y > b.y && a.y+a.width < b.y+b.width){
+        private boolean inside(int x, int y, Box b){ //if a is inside b
+            if (x >= b.x && x <= b.x+b.width){
+                if (y >= b.y && y <= b.y+b.width){
                     return true;
                 }
             }
@@ -296,7 +309,7 @@ public class MainGame implements ApplicationListener {
 
         
         private void updatebunny(){
-            /*bunny.x += bunny.speed*bunny.heading_x; // move on the x axis
+            bunny.x += bunny.speed*bunny.heading_x; // move on the x axis
             if (outside(bunny)){
                 bunny.heading_x *= -1; //change the heading
                 bunny.x += bunny.speed*bunny.heading_x; //reverse the move;
@@ -305,7 +318,7 @@ public class MainGame implements ApplicationListener {
             if (outside(bunny)){
                 bunny.heading_y *= -1; //change the heading
                 bunny.y += bunny.speed*bunny.heading_y; //reverse the move;
-            }    */
+            }
         }
         
         private void updateplayer(){
