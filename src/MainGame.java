@@ -188,7 +188,7 @@ public class MainGame implements ApplicationListener {
         	
         	case PLAYING: 	this.play();
         					break;
-        	
+
         	case HELP:  	this.help();
         					break;
         	
@@ -387,11 +387,14 @@ public class MainGame implements ApplicationListener {
             
             //show the minimap if that is requested.
             if (this.mtoggle){
+	            Gdx.gl11.glMatrixMode(GL11.GL_PROJECTION);
+	            Gdx.gl11.glLoadIdentity();
+	            Gdx.gl11.glViewport(miniPort.left, miniPort.bottom, miniPort.width, miniPort.height);
+	            Gdx.glu.gluOrtho2D(Gdx.gl10, miniWindow.left, miniWindow.right, miniWindow.bottom, miniWindow.top);
+
             	Gdx.gl11.glColor4f(0, 1, 0, 1.0f);
-            	Gdx.gl11.glViewport(miniPort.left, miniPort.bottom, miniPort.width, miniPort.height);
                 Gdx.gl11.glMatrixMode(GL11.GL_MODELVIEW);
                 Gdx.gl11.glLoadIdentity();
-                Gdx.glu.gluOrtho2D(Gdx.gl10, miniWindow.left, miniWindow.right, miniWindow.bottom, miniWindow.top);
                 drawminimapframe();
                 drawScene();
             }
