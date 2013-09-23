@@ -23,10 +23,7 @@ public class MainGame implements ApplicationListener {
 		private int state;
 		
 		//minimap toggle
-		private boolean mtoggle = true; 
-		
-		//This is set to true when the player is in the progress of playing a game
-		private boolean playing = false;
+		private boolean mtoggle = true;
 
         //Variable for the Player.
         private Box player;
@@ -44,14 +41,23 @@ public class MainGame implements ApplicationListener {
 
         private SpriteBatch spriteBatch;
         private BitmapFont font;
-        private FloatBuffer vertexBuffer;
 
+        private FloatBuffer boxBuffer;
+        private FloatBuffer hBuffer;
+        private FloatBuffer vBuffer;
+        private FloatBuffer mapBuffer;
+
+
+        private int env_height;
+        private int env_width;
 
         @Override
         //The create function is called when the Application is first created.
         // This is a good place for application initialization.
         public void create() {
-        	this.state = MENU;
+            env_height = Gdx.graphics.getHeight();
+            env_width = Gdx.graphics.getWidth();
+            this.state = MENU;
 
             this.initialize();
 
@@ -60,13 +66,25 @@ public class MainGame implements ApplicationListener {
             Gdx.gl11.glClearColor(0f, 0f, 0.2f, 1);
 
             // Create vertex buffer for a Box.
-            this.vertexBuffer = BufferUtils.newFloatBuffer(8);
-            this.vertexBuffer.put(new float[] {0,0, 0,player.width, player.width,0, player.width,player.width});
-            this.vertexBuffer.rewind();
+            this.boxBuffer = BufferUtils.newFloatBuffer(8);
+            this.boxBuffer.put(new float[] {0,0, 0,player.width, player.width,0, player.width,player.width});
+            this.boxBuffer.rewind();
+
+            this.vBuffer = BufferUtils.newFloatBuffer(8);
+            this.vBuffer.put(new float[] {0,0, 10,0, 0,env_height, 10,env_height});
+            this.vBuffer.rewind();
+
+            this.hBuffer = BufferUtils.newFloatBuffer(8);
+            this.hBuffer.put(new float[] {0,0, env_width,0, 0,10, env_width,10});
+            this.hBuffer.rewind();
+
+            this.mapBuffer = BufferUtils.newFloatBuffer(8);
+            this.mapBuffer.put(new float[] {0,0, env_width,0, 0,env_height, env_width,env_height});
+            this.mapBuffer.rewind();
 
             // Specify the location of data in the vertex buffer that we will draw when
             // we call the glDrawArrays function.
-            Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.vertexBuffer);
+            Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.boxBuffer);
             
          // Enable vertex arrays.
             Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
@@ -80,11 +98,11 @@ public class MainGame implements ApplicationListener {
             player = new Box(250,100,width,0,1,1,3);
             bunny = new Box(100,100,width,1,0.6f,0.6f,2);
             
-            mainWindow = new WorldWindow(0, 800, 0, 800);
-        	mainPort = new ViewPort(0, 0, 800, 800);
+            mainWindow = new WorldWindow(0, env_width, 0, env_height);
+        	mainPort = new ViewPort(0, 0, env_width, env_height);
         	
-        	miniWindow = new WorldWindow(0, 800, 0, 800); //TODO change to accomadate the maze size
-        	miniPort = new ViewPort(0, 0, 200, 200);
+        	miniWindow = new WorldWindow(0, env_width, 0, env_height); //TODO change to accomadate the maze size
+        	miniPort = new ViewPort(0, 0, env_width/4, env_height/4);
         }
         
         //The dispose function is called when the Application is destroyed.
@@ -110,8 +128,7 @@ public class MainGame implements ApplicationListener {
         	case MENU: 		this.menu();
         					break;
         	
-        	case PLAYING: 	this.display();
-        					this.update();
+        	case PLAYING: 	this.play();
         					break;
         	
         	case HELP:  	this.help();
@@ -121,6 +138,11 @@ public class MainGame implements ApplicationListener {
         					break;
         	
         	}
+        }
+
+        private void play(){
+            this.display();
+            this.update();
         }
         
         private void menu(){
@@ -137,21 +159,11 @@ public class MainGame implements ApplicationListener {
             font.draw(this.spriteBatch, String.format("FIND THE PINK BUNNY"), 240, 450);
             font.draw(this.spriteBatch, String.format("Use the Arrow Keys to navigate the maze."), 130, 350);
             font.draw(this.spriteBatch, String.format("Press 'H' to see the help dialog in game."), 130, 300);
-            font.draw(this.spriteBatch, String.format("Press 'S' to start an ongoing game."), 130, 250);
-            font.draw(this.spriteBatch, String.format("Press 'N' to start a new game."), 130, 200);
+            font.draw(this.spriteBatch, String.format("Press 'N' to start a new game."), 130, 250);
             this.spriteBatch.end();
 
-            if(Gdx.input.isKeyPressed(Input.Keys.S)){
-            	this.state = PLAYING;
-            	if (this.playing == false){
-            		this.playing = true;
-            		this.initialize();
-            	}
-            }
-            
             if(Gdx.input.isKeyPressed(Input.Keys.N)){
             	this.state = PLAYING;
-            	this.playing = true;
             	this.initialize();
             }
             
@@ -194,7 +206,7 @@ public class MainGame implements ApplicationListener {
             this.spriteBatch.begin();
             font.setColor(1, 1, 1, 1f);
             font.draw(this.spriteBatch, String.format("CONGRATULATIONS!"), 250, 550);
-            font.draw(this.spriteBatch, String.format("You cought the pink bunny :D"), 250, 500);
+            font.draw(this.spriteBatch, String.format("You caught the pink bunny :D"), 250, 500);
             font.draw(this.spriteBatch, String.format("Press Q to go to the menu and start a new game."), 250, 450);
             this.spriteBatch.end();
             
@@ -249,6 +261,7 @@ public class MainGame implements ApplicationListener {
             if (Gdx.input.isKeyPressed(Input.Keys.Q)){
             	this.state = MENU;
             }
+
             if (Gdx.input.isKeyPressed(Input.Keys.M)){
             	if (this.mtoggle) this.mtoggle = false;
             	else this.mtoggle = true;
@@ -257,7 +270,7 @@ public class MainGame implements ApplicationListener {
        
 
         private void display(){
-    		Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.vertexBuffer);
+    		Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.boxBuffer);
         	Gdx.gl11.glClearColor(0f, 0f, 0.5f, 1.0f); //background color
             Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT); //clear background
             Gdx.gl11.glColor4f(1, 1, 0, 1.0f);
@@ -275,11 +288,13 @@ public class MainGame implements ApplicationListener {
                 Gdx.gl11.glMatrixMode(GL11.GL_MODELVIEW);
                 Gdx.gl11.glLoadIdentity();
                 Gdx.glu.gluOrtho2D(Gdx.gl10, miniWindow.left, miniWindow.right, miniWindow.bottom, miniWindow.top);
-                drawScene();     
+                drawminimapframe();
+                drawScene();
             }
         }
         
         private void drawScene(){
+            Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.boxBuffer);
         	displaybox(player);
         	displaybox(bunny);
         }
@@ -293,6 +308,19 @@ public class MainGame implements ApplicationListener {
             Gdx.gl11.glTranslatef(b.x, b.y, 0);
             Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
             Gdx.gl11.glPopMatrix(); 
+        }
+
+        private void drawminimapframe(){
+            //draw the background of the map
+            Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.mapBuffer);
+
+            Gdx.gl11.glMatrixMode(GL11.GL_MODELVIEW);
+            Gdx.gl11.glLoadIdentity();
+            Gdx.gl11.glColor4f(0f, 0f, 0.7f, 1f); //red
+
+            Gdx.gl11.glPushMatrix();
+            Gdx.gl11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, 4);
+            Gdx.gl11.glPopMatrix();
         }
         
 
