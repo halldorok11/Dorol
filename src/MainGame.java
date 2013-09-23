@@ -275,24 +275,49 @@ public class MainGame implements ApplicationListener {
         }
 
         private boolean outside(Box a){
-            for (Box b : collisionboxes){
+           /** for (Box b : collisionboxes){
                 if (inside(a,b)){
                     return false;
                 }
-            }
+            }   */
+
+	        if(inside(a))
+		        return false;
 
 	        System.out.println("Outside?");
             return true;
         }
+	    private boolean inside(Box a)
+	    {
+		    boolean bottomLeft = false, topLeft = false, bottomRight = false, topRight = false;
+			for(Box b : collisionboxes)
+			{
+				if((a.x > b.x) && (a.y < b.y))
+					bottomLeft = true;
 
-        private boolean inside(Box a, Box b){ //if a is inside b
+				if((a.x > b.x) && (a.y + a.width < b.y + b.width))
+					topLeft = true;
+
+				if((a.x + a.width < b.x + b.width) && (a.y < b.y))
+					bottomRight = true;
+
+				if((a.x  + a.width < b.x + b.width) && (a.y + a.width < b.y + b.width))
+					topRight = true;
+			}
+		    if(!bottomLeft || !topLeft || !bottomRight || !topRight)
+			    return false;
+
+		    return true;
+
+	    }
+        /*private boolean inside(Box a, int b){ //if a is inside b
             if (a.x > b.x && a.x+a.width < b.x+b.width){
                 if (a.y > b.y && a.y+a.width < b.y+b.width){
                     return true;
                 }
             }
             return false;
-        }
+        }   */
 
         
         private void updatebunny(){
