@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -279,6 +280,8 @@ public class MainGame implements ApplicationListener {
                     return false;
                 }
             }
+
+	        System.out.println("Outside?");
             return true;
         }
 
@@ -293,7 +296,7 @@ public class MainGame implements ApplicationListener {
 
         
         private void updatebunny(){
-            bunny.x += bunny.speed*bunny.heading_x; // move on the x axis
+            /*bunny.x += bunny.speed*bunny.heading_x; // move on the x axis
             if (outside(bunny)){
                 bunny.heading_x *= -1; //change the heading
                 bunny.x += bunny.speed*bunny.heading_x; //reverse the move;
@@ -302,7 +305,7 @@ public class MainGame implements ApplicationListener {
             if (outside(bunny)){
                 bunny.heading_y *= -1; //change the heading
                 bunny.y += bunny.speed*bunny.heading_y; //reverse the move;
-            }
+            }    */
         }
         
         private void updateplayer(){
@@ -365,14 +368,20 @@ public class MainGame implements ApplicationListener {
        
 
         private void display(){
+	        //set up our projection Matrix
+	        Gdx.gl11.glMatrixMode(GL11.GL_PROJECTION);
+	        Gdx.gl11.glLoadIdentity();
+	        Gdx.gl11.glViewport(mainPort.left, mainPort.bottom, mainPort.width, mainPort.height);
+	        Gdx.glu.gluOrtho2D(Gdx.gl10, player.x-100, player.x+100, player.y-100, player.y+100);
+
     		Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.boxBuffer);
         	Gdx.gl11.glClearColor(0f, 0f, 0.5f, 1.0f); //background color
             Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT); //clear background
             Gdx.gl11.glColor4f(1, 1, 0, 1.0f);
-            Gdx.gl11.glViewport(mainPort.left, mainPort.bottom, mainPort.width, mainPort.height);
+
             Gdx.gl11.glMatrixMode(GL11.GL_MODELVIEW);
             Gdx.gl11.glLoadIdentity();
-            Gdx.glu.gluOrtho2D(Gdx.gl10, player.x-75, player.x+75, player.y-75, player.y+75);
+
             drawScene();
 
             
