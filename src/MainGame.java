@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL11;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -23,7 +24,7 @@ public class MainGame implements ApplicationListener {
 		private int state;
 		
 		//minimap toggle
-		private boolean mtoggle = true;
+		private boolean mtoggle = false;
 
         //Variable for the Player.
         private Box player;
@@ -46,15 +47,22 @@ public class MainGame implements ApplicationListener {
         private FloatBuffer hBuffer;
         private FloatBuffer vBuffer;
         private FloatBuffer mapBuffer;
+        private FloatBuffer mazeBoxBuffer;
 
 
         private int env_height;
         private int env_width;
 
+        private Maze maze;
+        private Queue<Edge> edgelist;
+        private Box[][] boxes;
+        private List<Box> collisionboxes;
+
         @Override
         //The create function is called when the Application is first created.
         // This is a good place for application initialization.
         public void create() {
+
             env_height = Gdx.graphics.getHeight();
             env_width = Gdx.graphics.getWidth();
             this.state = MENU;
@@ -69,6 +77,10 @@ public class MainGame implements ApplicationListener {
             this.boxBuffer = BufferUtils.newFloatBuffer(8);
             this.boxBuffer.put(new float[] {0,0, 0,player.width, player.width,0, player.width,player.width});
             this.boxBuffer.rewind();
+
+            this.mazeBoxBuffer = BufferUtils.newFloatBuffer(8);
+            this.mazeBoxBuffer.put(new float[] {0,0, 0,32, 32,0, 32,32});
+            this.mazeBoxBuffer.rewind();
 
             this.vBuffer = BufferUtils.newFloatBuffer(8);
             this.vBuffer.put(new float[] {0,0, 10,0, 0,env_height, 10,env_height});
@@ -89,20 +101,65 @@ public class MainGame implements ApplicationListener {
          // Enable vertex arrays.
             Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
         }
+
         
         private void initialize(){
         	this.spriteBatch = new SpriteBatch();
             this.font = new BitmapFont();
             
             int width = 12;
-            player = new Box(250,100,width,0,1,1,3);
-            bunny = new Box(100,100,width,1,0.6f,0.6f,2);
+            player = new Box(1,1,width,0,1,1,3);
+            bunny = new Box(390,450,width,1,0.6f,0.6f,2);
             
             mainWindow = new WorldWindow(0, env_width, 0, env_height);
         	mainPort = new ViewPort(0, 0, env_width, env_height);
         	
-        	miniWindow = new WorldWindow(0, env_width, 0, env_height); //TODO change to accomadate the maze size
+        	miniWindow = new WorldWindow(0, env_width, 0, env_height); //TODO change to accommodate the maze size
+
         	miniPort = new ViewPort(0, 0, env_width/4, env_height/4);
+
+            initializemaze();
+
+        }
+
+        private void initializemaze(){
+            collisionboxes = new ArrayList<Box>();
+            boxes = new Box[16][16];
+            for (int i = 0; i < 16 ; i++){
+                for (int j = 0 ; j < 16 ; j++){
+                    boxes[i][j] = new Box(j*64,i*64,32,0,0,0,0);
+                    collisionboxes.add(boxes[i][j]);
+                }
+            }
+
+            maze = new Maze(16*16);
+            edgelist = (Queue<Edge>) maze.getEdges();
+
+            for(Edge e : edgelist){
+                int a = e.either();
+                int b = e.other(a);
+                Box abox = boxes[a%16][a/16];
+
+                if (side(a,b)){
+                    //add a box to the positive x
+                    Box t = new Box(abox);
+                    t.x += 32;
+                    collisionboxes.add(t);
+                }
+                else{
+                    //add a box to the positive y
+                    Box t = new Box(abox);
+                    t.y += 32;
+                    collisionboxes.add(t);
+                }
+            }
+        }
+
+        private boolean side(int a, int b){
+             if (b-a == 1){
+                return true;
+             }
+             return false;
         }
         
         //The dispose function is called when the Application is destroyed.
@@ -216,24 +273,62 @@ public class MainGame implements ApplicationListener {
             }
         }
 
+        private boolean outside(Box a){
+            for (Box b : collisionboxes){
+                if (inside(a,b)){
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private boolean inside(Box a, Box b){ //if a is inside b
+            if (a.x > b.x && a.x+a.width < b.x+b.width){
+                if (a.y > b.y && a.y+a.width < b.y+b.width){
+                    return true;
+                }
+            }
+            return false;
+        }
+
         
         private void updatebunny(){
             bunny.x += bunny.speed*bunny.heading_x; // move on the x axis
+            if (outside(bunny)){
+                bunny.heading_x *= -1; //change the heading
+                bunny.x += bunny.speed*bunny.heading_x; //reverse the move;
+            }
             bunny.y += bunny.speed*bunny.heading_y; // move on the y axis
+            if (outside(bunny)){
+                bunny.heading_y *= -1; //change the heading
+                bunny.y += bunny.speed*bunny.heading_y; //reverse the move;
+            }
         }
         
         private void updateplayer(){
         	if(Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
             	player.x += player.speed; //move it on the x axis
+                if (outside(player)){
+                    player.x -= player.speed; //rollback the keypress
+                }
             }
             if(Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)){ //same as above
             	player.x -= player.speed;
+                if (outside(player)){
+                    player.x += player.speed; //rollback the keypress
+                }
             }
             if(Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)){ //same as above
             	player.y += player.speed;
+                if (outside(player)){
+                    player.y -= player.speed; //rollback the keypress
+                }
             }
             if(Gdx.input.isKeyPressed(Input.Keys.S)|| Gdx.input.isKeyPressed(Input.Keys.DOWN)){ //same as above
             	player.y -= player.speed;
+                if (outside(player)){
+                    player.y += player.speed; //rollback the keypress
+                }
             }
         }
         
@@ -294,12 +389,20 @@ public class MainGame implements ApplicationListener {
         }
         
         private void drawScene(){
-            Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, this.boxBuffer);
-        	displaybox(player);
-        	displaybox(bunny);
+            drawmaze();
+            displaybox(player,boxBuffer);
+        	displaybox(bunny,boxBuffer);
+        }
+
+        private void drawmaze(){
+            for (Box b : collisionboxes){
+                displaybox(b, mazeBoxBuffer);
+            }
         }
         
-        private void displaybox(Box b){
+        private void displaybox(Box b, FloatBuffer buffer){
+            Gdx.gl11.glVertexPointer(2, GL11.GL_FLOAT, 0, buffer);
+
         	Gdx.gl11.glMatrixMode(GL11.GL_MODELVIEW);
             Gdx.gl11.glLoadIdentity();
             Gdx.gl11.glColor4f(b.red, b.green, b.blue, 1f);

@@ -17,6 +17,18 @@ public class Box {
 		this.heading_x = 1;
 		this.heading_y = 1;
 	}
+
+    public Box(Box b){
+        this.x = b.x;
+        this.y = b.y;
+        this.width = b.width;
+        this.red = b.red;
+        this.green = b.green;
+        this.blue = b.blue;
+        this.speed = b.speed;
+        this.heading_x = 1;
+        this.heading_y = 1;
+    }
 }
 
 	
