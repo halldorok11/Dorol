@@ -132,7 +132,7 @@ public class MainGame implements ApplicationListener {
             boxes = new Box[16][16];
             for (int i = 0; i < 16 ; i++){
                 for (int j = 0 ; j < 16 ; j++){
-                    boxes[i][j] = new Box(j*64,i*64,32,0,0,0,0);
+                    boxes[i][j] = new Box(i*64,j*64,32,0,0,0,0);
                     collisionboxes.add(boxes[i][j]);
                 }
             }
