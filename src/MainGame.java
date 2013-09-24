@@ -7,21 +7,20 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.BufferUtils;
+import com.badlogic.gdx.InputProcessor;
 
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 
-public class MainGame implements ApplicationListener {
+public class MainGame implements ApplicationListener
+{
 		private static final int MENU = 0;
 		private static final int PLAYING = 1;
 		private static final int HELP = 2;
 		private static final int WON = 3;
-	
-		//Used to see in what state the game is
+
+	//Used to see in what state the game is
 		private int state;
 		
 		//minimap toggle
@@ -56,16 +55,22 @@ public class MainGame implements ApplicationListener {
         private int map_height;
         private int map_width;
 
+		private boolean MapMutex = false;
+
         private Maze maze;
         private Queue<Edge> edgelist;
         private Box[][] boxes;
         private List<Box> collisionboxes;
+		private MyInputProcessor inputProcessor;
+
 
         @Override
         //The create function is called when the Application is first created.
         // This is a good place for application initialization.
-        public void create() {
-
+        public void create()
+        {
+	        inputProcessor = new MyInputProcessor(this);
+	        Gdx.input.setInputProcessor(inputProcessor);
             env_height = Gdx.graphics.getHeight();
             env_width = Gdx.graphics.getWidth();
             map_height = map_width = 1000;
@@ -107,8 +112,8 @@ public class MainGame implements ApplicationListener {
             Gdx.gl11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
         }
 
-        
-        private void initialize(){
+
+	private void initialize(){
         	this.spriteBatch = new SpriteBatch();
             this.font = new BitmapFont();
             
@@ -373,11 +378,6 @@ public class MainGame implements ApplicationListener {
             if (Gdx.input.isKeyPressed(Input.Keys.Q)){
             	this.state = MENU;
             }
-
-            if (Gdx.input.isKeyPressed(Input.Keys.M)){
-            	if (this.mtoggle) this.mtoggle = false;
-            	else this.mtoggle = true;
-            }
         }
        
 
@@ -469,5 +469,16 @@ public class MainGame implements ApplicationListener {
 
         @Override
         public void resume() {}
+
+	    public void ToggleMinimap()
+	    {
+		    if(this.state == PLAYING)
+		    {
+			    if (this.mtoggle) this.mtoggle = false;
+			    else this.mtoggle = true;
+		    }
+
+	    }
+
 
     }
