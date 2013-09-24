@@ -288,13 +288,25 @@ public class MainGame implements ApplicationListener
             for (Box b : collisionboxes){
                 if (inside(a.x, a.y, b)){
                     set++;
-                    if (set >= 2){
+                    if (set >= 4){
+                        return false;
+                    }
+                }
+                if (inside(a.x+a.width, a.y, b)){
+                    set++;
+                    if (set >= 4){
+                        return false;
+                    }
+                }
+                if (inside(a.x, a.y+a.width, b)){
+                    set++;
+                    if (set >= 4){
                         return false;
                     }
                 }
                 if (inside(a.x+a.width, a.y+a.width, b)){
                     set++;
-                    if (set >= 2){
+                    if (set >= 4){
                         return false;
                     }
                 }
