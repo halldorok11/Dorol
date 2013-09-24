@@ -297,13 +297,7 @@ public class MainGame implements ApplicationListener {
 
             return true;
         }
-	    private boolean inside(Box a)
-	    {
-		    boolean bottomLeft = false, topLeft = false, bottomRight = false, topRight = false;
-			for(Box b : collisionboxes)
-			{
-				if((a.x > b.x) && (a.y < b.y))
-					bottomLeft = true;
+
 
         private boolean inside(int x, int y, Box b){ //if a is inside b
             if (x >= b.x && x <= b.x+b.width){
@@ -312,7 +306,7 @@ public class MainGame implements ApplicationListener {
                 }
             }
             return false;
-        }   */
+        }
 
         
         private void updatebunny(){
