@@ -61,7 +61,11 @@ public class MainGame implements ApplicationListener
         private Queue<Edge> edgelist;
         private Box[][] boxes;
         private List<Box> collisionboxes;
+
 		private MyInputProcessor inputProcessor;
+
+        private Stopwatch watch;
+        private double winningtime;
 
 
         @Override
@@ -124,11 +128,13 @@ public class MainGame implements ApplicationListener
             mainWindow = new WorldWindow(0, env_width, 0, env_height);
         	mainPort = new ViewPort(0, 0, env_width, env_height);
         	
-        	miniWindow = new WorldWindow(0, map_width, 0, map_height); //TODO change to accommodate the maze size
+        	miniWindow = new WorldWindow(0, map_width, 0, map_height);
 
         	miniPort = new ViewPort(0, 0, env_width/4, env_height/4);
 
             initializemaze();
+
+            watch = new Stopwatch();
 
         }
 
@@ -264,7 +270,7 @@ public class MainGame implements ApplicationListener
         
         private void congratulations(){
         	// Clear the screen.
-        	Gdx.gl11.glClearColor(0f, 0.3f, 0f, 1);
+        	Gdx.gl11.glClearColor(0.7f, 0.3f, 0f, 1);
             Gdx.gl11.glClear(GL11.GL_COLOR_BUFFER_BIT);
             //Just to be sure this is the viewport we write into.
             Gdx.gl11.glViewport(mainPort.left, mainPort.bottom, mainPort.width, mainPort.height);
@@ -273,7 +279,7 @@ public class MainGame implements ApplicationListener
             this.spriteBatch.begin();
             font.setColor(1, 1, 1, 1f);
             font.draw(this.spriteBatch, String.format("CONGRATULATIONS!"), 250, 550);
-            font.draw(this.spriteBatch, String.format("You caught the pink bunny :D"), 250, 500);
+            font.draw(this.spriteBatch, String.format("You caught the pink bunny in %.0f seconds :D", winningtime), 250, 500);
             font.draw(this.spriteBatch, String.format("Press Q to go to the menu and start a new game."), 250, 450);
             this.spriteBatch.end();
             
@@ -369,7 +375,8 @@ public class MainGame implements ApplicationListener
         private boolean victory(){
             if (player.x + player.width > bunny.x &&  player.x < bunny.x + bunny.width){ //if on the x axis, player is inside bunny, this is true
            		if (player.y + player.width > bunny.y &&  player.y < bunny.y + bunny.width){ // if on the y axis, player is inside bunny, this is true
-           			return true; //some point of player is inside bunny and therefore we have a collision between them.
+                    winningtime = watch.elapsedTime();
+                    return true; //some point of player is inside bunny and therefore we have a collision between them.
            		}
            	}
            	return false; //no collision      
