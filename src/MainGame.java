@@ -25,7 +25,7 @@ public class MainGame implements ApplicationListener {
 		private int state;
 		
 		//minimap toggle
-		private boolean mtoggle = false;
+		private boolean mtoggle = true;
 
         //Variable for the Player.
         private Box player;
