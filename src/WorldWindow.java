@@ -1,3 +1,6 @@
+/**
+ * A class to hold all the information for WorldWindow.
+ */
 class WorldWindow{
 	int left;
 	int right;

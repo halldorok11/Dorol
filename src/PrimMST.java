@@ -1,5 +1,6 @@
-
-
+/**
+ * This class holds all the information to generate a Minimum spanning tree using Prim's algorithm
+ */
 public class PrimMST {
 	private Edge[] edgeTo;        // edgeTo[v] = shortest edge from tree vertex to non-tree vertex
 	private double[] distTo;      // distTo[v] = weight of shortest such edge

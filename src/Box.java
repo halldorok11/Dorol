@@ -1,11 +1,23 @@
-
+/**
+ * A class to hold the information needed for a box.
+ */
 public class Box {
 	public int x; //x position on screen
 	public int y; //y position on screen
 	public int width; //the width of the box
 	public float red, green, blue; //colors of the box
 	public int speed, heading_x, heading_y;;
-	
+
+    /**
+     * Generic constructor
+     * @param x x coordinate
+     * @param y y coordinate
+     * @param width width of the box
+     * @param red R in RGB
+     * @param green G in RGB
+     * @param blue B in RGB
+     * @param speed speed of the box
+     */
 	public Box(int x, int y, int width, float red, float green, float blue, int speed) {
 		this.x = x;
 		this.y = y;
@@ -18,6 +30,10 @@ public class Box {
 		this.heading_y = 1;
 	}
 
+    /**
+     * Copy constructor
+     * @param b the box to be replicated
+     */
     public Box(Box b){
         this.x = b.x;
         this.y = b.y;

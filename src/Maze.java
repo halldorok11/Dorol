@@ -1,3 +1,6 @@
+/**
+ * This Class holds all the information to generate a maze
+ */
 public class Maze {
 
 	//member variables

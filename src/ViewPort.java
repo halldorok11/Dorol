@@ -1,3 +1,6 @@
+/**
+ * A class to hold all the information for Viewports.
+ */
 class ViewPort{
 	int left;
 	int bottom;
